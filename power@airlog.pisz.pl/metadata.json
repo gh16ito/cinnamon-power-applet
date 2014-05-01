@@ -1,6 +1,6 @@
 {
- "uuid": "power@cinnamon.org",
+ "uuid": "power@airlog.pisz.pl",
  "name": "Power Manager",
- "description": "Cinnamon power management applet",
+ "description": "Cinnamon power management applet fork. Compatible with upower-0.99",
  "icon": "battery-full-charging"
 }
