@@ -185,11 +185,19 @@ MyApplet.prototype = {
     },
     
     _getDevice: function () {
+        // FIXME: don't know how to access device_id now, it works like a charm with this magic number
         return [1, this._proxy.Type, this._proxy.IconName, this._proxy.Percentage, this._proxy.State, this._getSeconds()]
     },
     
     _getSeconds: function () {
-        return this._proxy.TimeToEmpty;
+        var sec = 0;
+        if (this._proxy.State == UPDeviceState.DISCHARGING) {
+            return this._proxy.TimeToEmpty;
+        } else if (this._proxy.State == UPDeviceState.CHARGING) {
+            return this._proxy.TimeToFull;
+        }
+
+        return sec;
     },
     
     _sync: function () {
