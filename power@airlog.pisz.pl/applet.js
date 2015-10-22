@@ -1,6 +1,6 @@
 const Applet = imports.ui.applet;
 const Gio = imports.gi.Gio;
-const DBus = imports.dbus;
+const DBus = imports.gi.Gio.DBus;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
@@ -36,27 +36,33 @@ const UPDeviceState = {
     PENDING_DISCHARGE: 6
 };
 
-const SettingsManagerInterface = {
-	name: 'org.freedesktop.DBus.Properties',
-	methods: [
-		{ name: 'GetAll', inSignature: 's', outSignature: 'a{sv}' }
-	],
-	signals: [
-	{name: 'PropertiesChanged', inSignature:'s,a{sv},a[s]', outSignature:''}
-	]
-};
+const SettingsManagerInterface = '\
+<node>\
+    <interface name="org.freedesktop.DBus.Properties"> \
+        <method name="GetAll">\
+            <arg type="s" direction="in"/> \
+            <arg type="a{sv}" direction="out"/> \
+        </method>\
+        <signal name="PropertiesChanged">\
+            <arg type="s,a{sv},a[s]" />\
+        </signal>\
+    </interface>\
+</node>';
 
-let SettingsManagerProxy = DBus.makeProxyClass(SettingsManagerInterface);
+let SettingsManagerProxy = Gio.DBusProxy.makeProxyWrapper(SettingsManagerInterface);
 
-const DisplayDeviceInterface = <interface name="org.freedesktop.UPower.Device">
-    <property name="Type" type="u" access="read"/>
-    <property name="State" type="u" access="read"/>
-    <property name="Percentage" type="d" access="read"/>
-    <property name="TimeToEmpty" type="x" access="read"/>
-    <property name="TimeToFull" type="x" access="read"/>
-    <property name="IsPresent" type="b" access="read"/>
-    <property name="IconName" type="s" access="read"/>
-    </interface>;
+const DisplayDeviceInterface = '\
+<node> \
+    <interface name="org.freedesktop.UPower.Device"> \
+        <property name="Type" type="u" access="read"/> \
+        <property name="State" type="u" access="read"/> \
+        <property name="Percentage" type="d" access="read"/> \
+        <property name="TimeToEmpty" type="x" access="read"/> \
+        <property name="TimeToFull" type="x" access="read"/> \
+        <property name="IsPresent" type="b" access="read"/> \
+        <property name="IconName" type="s" access="read"/> \
+    </interface> \
+</node>';
 let DisplayDeviceProxy = Gio.DBusProxy.makeProxyWrapper(DisplayDeviceInterface);
 
 function DeviceItem() {
@@ -142,12 +148,12 @@ MyApplet.prototype = {
             
             //this.set_applet_icon_symbolic_name('battery-missing');            
             this._proxy = new DisplayDeviceProxy(Gio.DBus.system,
-            		'org.freedesktop.UPower',
-            		'/org/freedesktop/UPower/devices/DisplayDevice',
-            		Lang.bind(this, function (proxy, error) {
-            			this._proxy.connect('g-properties-changed', Lang.bind(this, this._sync));
-            			this._sync();
-            		}));
+                    'org.freedesktop.UPower',
+                    '/org/freedesktop/UPower/devices/DisplayDevice',
+                    Lang.bind(this, function (proxy, error) {
+                        this._proxy.connect('g-properties-changed', Lang.bind(this, this._sync));
+                        this._sync();
+                    }));
             this._smProxy = new SettingsManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
             
             let icon = this.actor.get_children()[0];
